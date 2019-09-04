@@ -13,14 +13,6 @@ headers = {'User-Agent':
 response = requests.get(domain, headers=headers)
 soup = BeautifulSoup(response.text, "html.parser")
 
-'''
-cant_res = soup.find('div', attrs={'class': 'quantity-results'}).text
-cant_res = str(cant_res)
-cant_res = cant_res.replace('.', '')
-cant_res = cant_res.split(' ', 2)
-num_pubs = int(cant_res[1])
-'''
-
 '''while para crear el array con los links de todas las páginas'''
 
 k = 97
