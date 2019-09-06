@@ -156,8 +156,12 @@ for u in range(0, len(linksM)):
                 k = 49
                 links_paginas = [url_bmp]
                 while k <= num:
-                    links_paginas += [url_bmp + '/_Desde_' + str(k)]
-                    k = k + 48
+                    if '_PciaId_cordoba' in url_bmp or '_PciaId_santa-fe' in url_bmp:
+                        links_paginas += [url_bmp + '/_Desde_' + str(k)]
+                        k = k + 48
+                    else:
+                        links_paginas += [url_bmp + '_Desde_' + str(k)]
+                        k = k + 48
 
             for r in range(0, len(links_paginas)):
                 url = links_paginas[r]
