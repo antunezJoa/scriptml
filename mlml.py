@@ -14,6 +14,7 @@ headers = {'User-Agent':
 response = requests.get(domain, headers=headers)
 soup = BeautifulSoup(response.text, "html.parser")
 
+all_links = []
 brands = []
 
 for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_1'}):
@@ -117,11 +118,7 @@ for u in range(0, len(linksM)):
 
         for j in range(0, len(linksMML)):
             url_bmp = linksMML[j]
-            print(url_bmp)
             response = requests.get(url_bmp, headers=headers)
-            if response.status_code != 200:
-                url_bmp = (url_bmp + '/')
-                response = requests.get(url_bmp, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
 
             tag2 = soup.findAll('div', {'class': 'quantity-results'})
@@ -138,10 +135,8 @@ for u in range(0, len(linksM)):
                 k = 49
                 links_paginas = [url_bmp]
                 while k <= num:
-                    links_paginas += [url_bmp + '_Desde_' + str(k)]
+                    links_paginas += [url_bmp + '/_Desde_' + str(k)]
                     k = k + 48
-
-            r = 0
 
             for r in range(0, len(links_paginas)):
                 url = links_paginas[r]
@@ -152,7 +147,7 @@ for u in range(0, len(linksM)):
 
                 links_pubs = []
 
-                for i in range(892, len(soup.findAll('a'))):
+                for i in range(116, len(soup.findAll('a'))):
                     tag = soup.findAll('a')[i]
                     href = tag['href']
                     if '/MLA-' in href:
@@ -163,8 +158,6 @@ for u in range(0, len(linksM)):
                 for i in links_pubs:
                     if i not in links_per_page:
                         links_per_page.append(i)
-
-                print(links_per_page)
 
                 '''for para recorrer todas las publicaciones dentro de una pagina'''
 
@@ -198,14 +191,16 @@ for u in range(0, len(linksM)):
 
                     '''obtengo la marca y modelo del vehiculo'''
 
-                    tag = []
+                    datos = []
 
-                    for i in range(17, 18):
-                        tag = soup.findAll('p')[i].text.replace(' ', '').split('|', 2)
+                    for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
+                        tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
+                        datos += [tag]
 
-                    datos_vehiculo['Marca'] = tag[0]
-                    datos_vehiculo['Modelo'] = tag[1]
-                    marca = tag[0]
+                    datos_vehiculo['Marca'] = datos[2]
+                    datos_vehiculo['Modelo'] = datos[3]
+                    marca = datos[2]
+                    modelo = datos[3]
 
                     path = './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/'
 
@@ -223,12 +218,20 @@ for u in range(0, len(linksM)):
 
                     '''creo el archivo .json con las características del vehiculo'''
 
-                    writetojsonfile('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/',
-                                    datos_vehiculo)
+                    writetojsonfile('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/', datos_vehiculo)
 
                     print("Creado meta.json")
 
                     '''obtengo los links de las imagenes de la publicacion en la que me encuentro'''
+
+                    i = 0
+                    place = []
+
+                    for div_tag in soup.findAll('div', {'class': 'location-info'}):
+                        place = div_tag.find('span').text
+                        i = i + 1
+                        if i > 0:
+                            break
 
                     q = 0
                     imagenes = []
@@ -245,10 +248,10 @@ for u in range(0, len(linksM)):
                     while y < q:
                         try:
                             urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-                            print("Descargada la imagen", y + 1, "de la publicacion", u + 1, "de la pagina", j + 1)
+                            print("Descargada la imagen", y + 1, "de la publicacion", z + 1, "de la pagina", r + 1, "/", place, "/", str(marca), str(modelo))
                         except Exception as e:
                             print(str(e), imagenes[y])
 
                         y = y + 1
 
-            print("End")
+print("End")
