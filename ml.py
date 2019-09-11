@@ -1,18 +1,26 @@
 import requests
 import urllib.request
-import unicodedata
 from bs4 import BeautifulSoup
 import os.path
+import unicodedata
 import re
 import json
+import time
 
 domain = 'https://autos.mercadolibre.com.ar/'
 headers = {'User-Agent':
                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) '
                'Chrome/50.0.2661.102 Safari/537.36'}
 
+path = './download/ml/'
+
+if not os.path.exists(path):
+    os.makedirs(path)
+
 response = requests.get(domain, headers=headers)
 soup = BeautifulSoup(response.text, "html.parser")
+
+'''funcion para normalizar los datos que se van obteniendo, elimnar espacios, acentos, etc'''
 
 def normalizar(list):
     for i in range(0, len(list)):
@@ -47,8 +55,6 @@ for i in range(0, len(marcas)):
         linksM += ['https://autos.mercadolibre.com.ar/' + str(marcas[i]) + '/']
 
 '''ahora voy a filtrar por los modelos de cada marca asi que los obtengo'''
-
-u = 0
 
 for u in range(0, len(linksM)):
     url_b = linksM[u]
@@ -117,8 +123,6 @@ for u in range(0, len(linksM)):
 
         '''ahora obtengo el numero de resultados por pagina para luego armar los links'''
 
-        j = 0
-
         for j in range(0, len(linksMML)):
             url_bmp = linksMML[j]
             response = requests.get(url_bmp, headers=headers)
@@ -149,7 +153,7 @@ for u in range(0, len(linksM)):
 
             for r in range(0, len(links_paginas)):
                 url = links_paginas[r]
-                print(url)
+                #print(url)
                 response = requests.get(url, headers=headers)
                 soup = BeautifulSoup(response.text, "html.parser")
 
@@ -169,99 +173,5 @@ for u in range(0, len(linksM)):
                     if i not in links_per_page:
                         links_per_page.append(i)
 
-                '''for para recorrer todas las publicaciones dentro de una pagina'''
-
-                z = 0
-
                 for z in range(0, len(links_per_page)):
-                    url_public = links_per_page[z]
-                    print(url_public)
-                    response = requests.get(url_public, headers=headers)
-                    soup = BeautifulSoup(response.text, "html.parser")
-
-                    '''obtengo el ID de la publicacion en la que me encuentro'''
-
-                    url_public_str = str(url_public)
-                    ides = re.findall('\d+', url_public_str)
-                    ides = list(map(int, ides))
-                    ID = max(ides)
-
-                    '''obtengo los datos del vehiculo'''
-
-                    datos_vehiculo = {}
-                    campos = []
-
-                    for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
-                        for span_tag in li_tag.find_all('li'):
-                            value = span_tag.find('span').text
-                            field = span_tag.find('strong').text
-                            campos += [field]
-                            if value != '':
-                                datos_vehiculo[field] = value
-
-                    '''obtengo la marca y modelo del vehiculo'''
-
-                    datos = []
-
-                    for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
-                        tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
-                        datos += [tag]
-
-                    datos_vehiculo['Marca'] = datos[2]
-                    datos_vehiculo['Modelo'] = datos[3]
-                    marca = datos[2]
-                    modelo = datos[3]
-
-                    path = './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/'
-
-                    if not os.path.exists(path):
-                        os.makedirs(path)
-
-                    '''funcion para crear archivos json'''
-
-
-                    def writetojsonfile(path, data):
-                        filepathnamewext = path + 'meta.json'
-                        with open(filepathnamewext, 'w') as fp:
-                            json.dump(data, fp)
-
-
-                    '''creo el archivo .json con las características del vehiculo'''
-
-                    writetojsonfile('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/', datos_vehiculo)
-
-                    print("Creado meta.json")
-
-                    '''obtengo los links de las imagenes de la publicacion en la que me encuentro'''
-
-                    i = 0
-                    place = []
-
-                    for div_tag in soup.findAll('div', {'class': 'location-info'}):
-                        place = div_tag.find('span').text
-                        i = i + 1
-                        if i > 0:
-                            break
-
-                    q = 0
-                    imagenes = []
-
-                    for i in range(0, len(soup.findAll('img'))):
-                        tag = soup.findAll('img')[i]
-                        if tag.get('data-srcset') is not None:
-                            image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
-                            imagenes += [image]
-                            q = q + 1
-
-                    y = 0
-
-                    while y < q:
-                        try:
-                            urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-                            print("Descargada la imagen", y + 1, "de la publicacion", z + 1, "de la pagina", r + 1, "/", place, "/", str(marca), str(modelo))
-                        except Exception as e:
-                            print(str(e), imagenes[y])
-
-                        y = y + 1
-
-print("End")
+                    
