@@ -14,7 +14,15 @@ headers = {'User-Agent':
 response = requests.get(domain, headers=headers)
 soup = BeautifulSoup(response.text, "html.parser")
 
-all_links = []
+def normalizar(list):
+    for i in range(0, len(list)):
+        list[i] = unicodedata.normalize('NFD', list[i]) \
+            .encode('ascii', 'ignore') \
+            .decode("utf-8")
+        list[i] = list[i][1:-1]
+        list[i] = re.sub(r'\([^)]*\)', '', list[i])
+        list[i] = list[i][:-1]
+
 brands = []
 
 '''voy a filtrar primero por marcas, asi que comienzo a obteniendo las marcas'''
@@ -23,15 +31,7 @@ for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_1'}):
     for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
         brands += [b.text.lower().replace(' ', '-')]
 
-for i in range(0, len(brands)):
-    brands[i] = unicodedata.normalize('NFD', brands[i]) \
-        .encode('ascii', 'ignore') \
-        .decode("utf-8")
-    brands[i] = brands[i][1:-1]
-
-for i in range(0, len(brands)):
-    brands[i] = re.sub(r'\([^)]*\)', '', brands[i])
-    brands[i] = brands[i][:-1]
+normalizar(brands)
 
 marcas = []
 
@@ -61,15 +61,7 @@ for u in range(0, len(linksM)):
         for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
             models += [b.text.lower().replace(' ', '-').replace('!', '')]
 
-    for i in range(0, len(models)):
-        models[i] = unicodedata.normalize('NFD', models[i]) \
-            .encode('ascii', 'ignore') \
-            .decode("utf-8")
-        models[i] = models[i][1:-1]
-
-    for i in range(0, len(models)):
-        models[i] = re.sub(r'\([^)]*\)', '', models[i])
-        models[i] = models[i][:-1]
+    normalizar(models)
 
     modelos = []
 
@@ -97,15 +89,7 @@ for u in range(0, len(linksM)):
             for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
                 places += [b.text.lower().replace('.', '').replace(' ', '-')]
 
-        for i in range(0, len(places)):
-            places[i] = unicodedata.normalize('NFD', places[i]) \
-                .encode('ascii', 'ignore') \
-                .decode("utf-8")
-            places[i] = places[i][1:-1]
-
-        for i in range(0, len(places)):
-            places[i] = re.sub(r'\([^)]*\)', '', places[i])
-            places[i] = places[i][:-1]
+        normalizar(places)
 
         '''ahora añado el filtro de ciudad'''
 
@@ -176,7 +160,7 @@ for u in range(0, len(linksM)):
                 for i in range(109, len(soup.findAll('a'))):
                     tag = soup.findAll('a')[i]
                     href = tag['href']
-                    if '/MLA-' in href:
+                    if '/MLA-' in href and '[BB:1]' not in href:
                         links_pubs += [href]
 
                 links_per_page = []
