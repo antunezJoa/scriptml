@@ -48,8 +48,6 @@ for i in range(0, len(marcas)):
 
 '''ahora voy a filtrar por los modelos de cada marca asi que los obtengo'''
 
-u = 0
-
 for u in range(0, len(linksM)):
     url_b = linksM[u]
     response = requests.get(url_b, headers=headers)
@@ -117,8 +115,6 @@ for u in range(0, len(linksM)):
 
         '''ahora obtengo el numero de resultados por pagina para luego armar los links'''
 
-        j = 0
-
         for j in range(0, len(linksMML)):
             url_bmp = linksMML[j]
             response = requests.get(url_bmp, headers=headers)
@@ -160,7 +156,7 @@ for u in range(0, len(linksM)):
                 for i in range(109, len(soup.findAll('a'))):
                     tag = soup.findAll('a')[i]
                     href = tag['href']
-                    if '/MLA-' in href and '[BB:1]' not in href:
+                    if '/MLA-' in href and '[BB:' not in href:
                         links_pubs += [href]
 
                 links_per_page = []
@@ -170,8 +166,6 @@ for u in range(0, len(linksM)):
                         links_per_page.append(i)
 
                 '''for para recorrer todas las publicaciones dentro de una pagina'''
-
-                z = 0
 
                 for z in range(0, len(links_per_page)):
                     url_public = links_per_page[z]
@@ -219,12 +213,10 @@ for u in range(0, len(linksM)):
 
                     '''funcion para crear archivos json'''
 
-
                     def writetojsonfile(path, data):
                         filepathnamewext = path + 'meta.json'
                         with open(filepathnamewext, 'w') as fp:
                             json.dump(data, fp)
-
 
                     '''creo el archivo .json con las características del vehiculo'''
 
@@ -258,7 +250,7 @@ for u in range(0, len(linksM)):
                     while y < q:
                         try:
                             urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-                            print("Descargada la imagen", y + 1, "de la publicacion", z + 1, "de la pagina", r + 1, "/", place, "/", str(marca), str(modelo))
+                            print("Descargada la imagen", y + 1, "de la publicacion", z + 1, "de la pagina", r + 1, "/", str(marca), str(modelo), "/",  place)
                         except Exception as e:
                             print(str(e), imagenes[y])
 
