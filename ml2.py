@@ -241,12 +241,8 @@ for u in range(0, len(linksM)):
                     y = 0
 
                     while y < q:
-                        try:
-                            urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-                            print("Descargada la imagen", y + 1, "de la publicacion", z + 1, "de la pagina", r + 1, "/", str(marca), str(modelo), "/",  place)
-                        except Exception as e:
-                            print(str(e), imagenes[y])
-
+                        urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+                        print("Descargada la imagen", y + 1, "de la publicacion", z + 1, "de la pagina", r + 1, "/", str(marca), str(modelo), "/",  place)
                         y = y + 1
 
 print("End")

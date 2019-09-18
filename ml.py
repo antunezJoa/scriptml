@@ -182,8 +182,9 @@ def downloadLinks ():
                         links['url' + str(y)] = links_per_page[i]
                         with open(path + "item_links.json", "w") as file:
                             json.dump(links, file)
-                        print("Saved", links['url' + str(y)], "saved links number:", y)
+                        print("Saved", links['url' + str(y)], "number of links saved:", y)
                         y += 1
+    print("End")
 
 
 path = './download/ml/item_links.json'
@@ -196,9 +197,9 @@ else:
 
     doms = json.loads(dominios)
 
-    count = 0
+    count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
 
-    while count <= 100:   ########################################## aca tendria que ir el numero de links que hay en el json
+    while count <= 100:  # aca va el numero de links guardados en el json
         url_public = doms['url' + str(count)]
         print(url_public, count)
 
@@ -272,12 +273,8 @@ else:
         y = 0
 
         while y < q:
-            try:
-                urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-                print("Descargada la imagen", y + 1, "/", str(marca), str(modelo), "/",  place)
-            except Exception as e:
-                print(str(e), imagenes[y])
-
+            urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+            print("Descargada la imagen", y + 1, "/", str(marca), str(modelo), "/",  place)
             y = y + 1
 
         count = count + 1
