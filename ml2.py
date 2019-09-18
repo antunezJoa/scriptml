@@ -14,6 +14,7 @@ headers = {'User-Agent':
 response = requests.get(domain, headers=headers)
 soup = BeautifulSoup(response.text, "html.parser")
 
+
 def normalizar(list):
     for i in range(0, len(list)):
         list[i] = unicodedata.normalize('NFD', list[i]) \
@@ -211,16 +212,8 @@ for u in range(0, len(linksM)):
                     if not os.path.exists(path):
                         os.makedirs(path)
 
-                    '''funcion para crear archivos json'''
-
-                    def writetojsonfile(path, data):
-                        filepathnamewext = path + 'meta.json'
-                        with open(filepathnamewext, 'w') as fp:
-                            json.dump(data, fp)
-
-                    '''creo el archivo .json con las características del vehiculo'''
-
-                    writetojsonfile('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/', datos_vehiculo)
+                    with open('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/meta.json', 'w') as fp:
+                        json.dump(datos_vehiculo, fp)
 
                     print("Creado meta.json")
 

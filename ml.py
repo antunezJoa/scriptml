@@ -11,23 +11,8 @@ headers = {'User-Agent':
                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) '
                'Chrome/50.0.2661.102 Safari/537.36'}
 
-all_links = []
-path = './download/ml/'
+'''funcion para normalizar los datos (filtros) que se van obteniendo, elimnar espacios, acentos, etc'''
 
-if not os.path.exists(path):
-    os.makedirs(path)
-
-
-def writetojsonfile(path, data):
-    filepathnamewext = path + 'itemslinks.json'
-    with open(filepathnamewext, 'w') as fp:
-        json.dump(data, fp)
-
-
-response = requests.get(domain, headers=headers)
-soup = BeautifulSoup(response.text, "html.parser")
-
-'''funcion para normalizar los datos que se van obteniendo, elimnar espacios, acentos, etc'''
 
 def normalizar(list):
     for i in range(0, len(list)):
@@ -38,243 +23,264 @@ def normalizar(list):
         list[i] = re.sub(r'\([^)]*\)', '', list[i])
         list[i] = list[i][:-1]
 
-brands = []
 
-'''voy a filtrar primero por marcas, asi que comienzo a obteniendo las marcas'''
-
-for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_1'}):
-    for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
-        brands += [b.text.lower().replace(' ', '-')]
-
-normalizar(brands)
-
-marcas = []
-
-for i in brands:
-    if i not in marcas:
-        marcas.append(i)
-
-'''armo los links con los filtros de las marcas'''
-
-linksM = []
-
-for i in range(0, len(marcas)):
-        linksM += ['https://autos.mercadolibre.com.ar/' + str(marcas[i]) + '/']
-
-'''ahora voy a filtrar por los modelos de cada marca asi que los obtengo'''
-
-for u in range(0, len(linksM)):
-    url_b = linksM[u]
-    response = requests.get(url_b, headers=headers)
+def downloadLinks ():
+    response = requests.get(domain, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    models = []
+    path = './download/ml/'
 
-    for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_2'}):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    links = {}
+
+    y = 0
+
+    brands = []
+
+    '''voy a filtrar primero por marcas, asi que comienzo a obteniendo las marcas'''
+
+    for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_1'}):
         for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
-            models += [b.text.lower().replace(' ', '-').replace('!', '')]
+            brands += [b.text.lower().replace(' ', '-')]
 
-    normalizar(models)
+    normalizar(brands)
 
-    modelos = []
+    marcas = []
 
-    for i in models:
-        if i not in modelos:
-            modelos.append(i)
+    for i in brands:
+        if i not in marcas:
+            marcas.append(i)
 
-    '''armo los links con los filtros de marca y modelo'''
+    '''armo los links con los filtros de las marcas'''
 
-    linksMM = []
+    linksM = []
 
-    for i in range(0, len(modelos)):
-        linksMM += [linksM[u] + str(modelos[i]) + '/']
+    for i in range(0, len(marcas)):
+            linksM += ['https://autos.mercadolibre.com.ar/' + str(marcas[i]) + '/']
 
-    '''ahora filtro por ciudad'''
+    '''ahora voy a filtrar por los modelos de cada marca asi que los obtengo'''
 
-    for k in range(0, len(linksMM)):
-        url_bm = linksMM[k]
-        response = requests.get(url_bm, headers=headers)
+    for u in range(0, len(linksM)):
+        url_b = linksM[u]
+        response = requests.get(url_b, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
 
-        places = []
+        models = []
 
-        for a_tag in soup.findAll('dl', {'id': 'id_state'}):
+        for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_2'}):
             for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
-                places += [b.text.lower().replace('.', '').replace(' ', '-')]
+                models += [b.text.lower().replace(' ', '-').replace('!', '')]
 
-        normalizar(places)
+        normalizar(models)
 
-        '''ahora añado el filtro de ciudad'''
+        modelos = []
 
-        lugares = []
+        for i in models:
+            if i not in modelos:
+                modelos.append(i)
 
-        for i in places:
-            if i not in lugares:
-                lugares.append(i)
+        '''armo los links con los filtros de marca y modelo'''
 
-        for i in range(0, len(lugares)):
-            if lugares[i] == 'cordoba':
-                lugares[i] = '_PciaId_cordoba'
-            if lugares[i] == 'santa-fe':
-                lugares[i] = '_PciaId_santa-fe'
+        linksMM = []
 
-        '''armo los links con los filtros de marca, modelo y ciudad'''
+        for i in range(0, len(modelos)):
+            linksMM += [linksM[u] + str(modelos[i]) + '/']
 
-        linksMML = []
+        '''ahora filtro por ciudad'''
 
-        for i in range(0, len(lugares)):
-            if str(lugares[i]) == '_PciaId_cordoba' or str(lugares[i]) == '_PciaId_santa-fe':
-                linksMML += [linksMM[k] + str(lugares[i])]
-            else:
-                linksMML += [linksMM[k] + str(lugares[i]) + '/']
-
-        '''ahora obtengo el numero de resultados por pagina para luego armar los links'''
-
-        for j in range(0, len(linksMML)):
-            url_bmp = linksMML[j]
-            response = requests.get(url_bmp, headers=headers)
+        for k in range(0, len(linksMM)):
+            url_bm = linksMM[k]
+            response = requests.get(url_bm, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
 
-            tag2 = soup.findAll('div', {'class': 'quantity-results'})
-            tag2 = str(tag2)
-            tag2 = tag2.replace('.', '')
+            places = []
 
-            lista = re.findall('\d+', tag2)
+            for a_tag in soup.findAll('dl', {'id': 'id_state'}):
+                for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
+                    places += [b.text.lower().replace('.', '').replace(' ', '-')]
 
-            num = int(lista[0])
+            normalizar(places)
 
-            '''armo los links de las paginas'''
+            '''ahora añado el filtro de ciudad'''
 
-            if num <= 48:
-                links_paginas = [url_bmp]
-            else:
-                k = 49
-                links_paginas = [url_bmp]
-                while k <= num:
-                    if '_PciaId_cordoba' in url_bmp or '_PciaId_santa-fe' in url_bmp:
-                        links_paginas += [url_bmp + '/_Desde_' + str(k)]
-                        k = k + 48
-                    else:
-                        links_paginas += [url_bmp + '_Desde_' + str(k)]
-                        k = k + 48
+            lugares = []
 
-            for r in range(0, len(links_paginas)):
-                url = links_paginas[r]
-                #print(url)
-                response = requests.get(url, headers=headers)
+            for i in places:
+                if i not in lugares:
+                    lugares.append(i)
+
+            for i in range(0, len(lugares)):
+                if lugares[i] == 'cordoba':
+                    lugares[i] = '_PciaId_cordoba'
+                if lugares[i] == 'santa-fe':
+                    lugares[i] = '_PciaId_santa-fe'
+
+            '''armo los links con los filtros de marca, modelo y ciudad'''
+
+            linksMML = []
+
+            for i in range(0, len(lugares)):
+                if str(lugares[i]) == '_PciaId_cordoba' or str(lugares[i]) == '_PciaId_santa-fe':
+                    linksMML += [linksMM[k] + str(lugares[i])]
+                else:
+                    linksMML += [linksMM[k] + str(lugares[i]) + '/']
+
+            '''ahora obtengo el numero de resultados por pagina para luego armar los links'''
+
+            for j in range(0, len(linksMML)):
+                url_bmp = linksMML[j]
+                response = requests.get(url_bmp, headers=headers)
                 soup = BeautifulSoup(response.text, "html.parser")
 
-                '''obtengo los links de las publaciones que hay por cada pagina'''
+                tag2 = soup.findAll('div', {'class': 'quantity-results'})
+                tag2 = str(tag2)
+                tag2 = tag2.replace('.', '')
 
-                links_pubs = []
+                lista = re.findall('\d+', tag2)
 
-                for i in range(109, len(soup.findAll('a'))):
-                    tag = soup.findAll('a')[i]
-                    href = tag['href']
-                    if '/MLA-' in href and '[BB:' not in href:
-                        links_pubs += [href]
+                num = int(lista[0])
 
-                links_per_page = []
+                '''armo los links de las paginas'''
 
-                for i in links_pubs:
-                    if i not in links_per_page:
-                        links_per_page.append(i)
+                if num <= 48:
+                    links_paginas = [url_bmp]
+                else:
+                    k = 49
+                    links_paginas = [url_bmp]
+                    while k <= num:
+                        if '_PciaId_cordoba' in url_bmp or '_PciaId_santa-fe' in url_bmp:
+                            links_paginas += [url_bmp + '/_Desde_' + str(k)]
+                            k = k + 48
+                        else:
+                            links_paginas += [url_bmp + '_Desde_' + str(k)]
+                            k = k + 48
 
-                links = {}
-
-                all_links += links_per_page
-
-                links['urls'] = all_links
-
-                writetojsonfile('./download/ml/', links)
-
-                for z in range(0, len(all_links)):
-                    url_public = links['urls'][z]
-                    print(url_public, z)
-                    response = requests.get(url_public, headers=headers)
+                for r in range(0, len(links_paginas)):
+                    url = links_paginas[r]
+                    #print(url)
+                    response = requests.get(url, headers=headers)
                     soup = BeautifulSoup(response.text, "html.parser")
 
-                    '''obtengo el ID de la publicacion en la que me encuentro'''
+                    '''obtengo los links de las publaciones que hay por cada pagina'''
 
-                    url_public_str = str(url_public)
-                    ides = re.findall('\d+', url_public_str)
-                    ides = list(map(int, ides))
-                    ID = max(ides)
+                    links_pubs = []
 
-                    '''obtengo los datos del vehiculo'''
+                    for i in range(109, len(soup.findAll('a'))):
+                        tag = soup.findAll('a')[i]
+                        href = tag['href']
+                        if '/MLA-' in href and '[BB:' not in href:
+                            links_pubs += [href]
 
-                    datos_vehiculo = {}
-                    campos = []
+                    links_per_page = []
 
-                    for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
-                        for span_tag in li_tag.find_all('li'):
-                            value = span_tag.find('span').text
-                            field = span_tag.find('strong').text
-                            campos += [field]
-                            if value != '':
-                                datos_vehiculo[field] = value
+                    for i in links_pubs:
+                        if i not in links_per_page:
+                            links_per_page.append(i)
 
-                    '''obtengo la marca y modelo del vehiculo'''
-
-                    datos = []
-
-                    for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
-                        tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
-                        datos += [tag]
-
-                    datos_vehiculo['Marca'] = datos[2]
-                    datos_vehiculo['Modelo'] = datos[3]
-                    marca = datos[2]
-                    modelo = datos[3]
-
-                    path = './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/'
-
-                    if not os.path.exists(path):
-                        os.makedirs(path)
-
-                    '''funcion para crear archivos json'''
+                    for i in range(0, len(links_per_page)):
+                        links['url' + str(y)] = links_per_page[i]
+                        with open(path + "item_links.json", "w") as f:
+                            json.dump(links, f)
+                        print("Saved", links['url' + str(y)], "saved links number:", y)
+                        y += 1
 
 
-                    def writetojsonfile2(path, data):
-                        filepathnamewext = path + 'meta.json'
-                        with open(filepathnamewext, 'w') as fp:
-                            json.dump(data, fp)
+path = './download/ml/item_links.json'
 
+if not os.path.exists(path):
+    downloadLinks()
+else:
+    with open('./download/ml/item_links.json', 'r') as f:
+        dominios = f.read()
 
-                    '''creo el archivo .json con las características del vehiculo'''
+    doms = json.loads(dominios)
 
-                    writetojsonfile2('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/', datos_vehiculo)
+    count = 0
 
-                    print("Creado meta.json")
+    while count <= 100: #aca tendria que ir el numero de links que hay en el json
+        url_public = doms['url' + str(count)]
+        print(url_public, count)
 
-                    '''obtengo los links de las imagenes de la publicacion en la que me encuentro'''
+        response = requests.get(url_public, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-                    i = 0
-                    place = []
+        '''obtengo el ID de la publicacion en la que me encuentro'''
 
-                    for div_tag in soup.findAll('div', {'class': 'location-info'}):
-                        place = div_tag.find('span').text
-                        i = i + 1
-                        if i > 0:
-                            break
+        url_public_str = str(url_public)
+        ides = re.findall('\d+', url_public_str)
+        ides = list(map(int, ides))
+        ID = max(ides)
 
-                    q = 0
-                    imagenes = []
+        '''obtengo los datos del vehiculo'''
 
-                    for i in range(0, len(soup.findAll('img'))):
-                        tag = soup.findAll('img')[i]
-                        if tag.get('data-srcset') is not None:
-                            image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
-                            imagenes += [image]
-                            q = q + 1
+        datos_vehiculo = {}
+        campos = []
 
-                    y = 0
+        for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
+            for span_tag in li_tag.find_all('li'):
+                value = span_tag.find('span').text
+                field = span_tag.find('strong').text
+                campos += [field]
+                if value != '':
+                    datos_vehiculo[field] = value
 
-                    while y < q:
-                        try:
-                            urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-                            print("Descargada la imagen", y + 1, "de la publicacion", z + 1, "de la pagina", r + 1, "/", str(marca), str(modelo), "/", place)
-                        except Exception as e:
-                            print(str(e), imagenes[y])
+        '''obtengo la marca y modelo del vehiculo'''
 
-                        y = y + 1
+        datos = []
+
+        for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
+            tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
+            datos += [tag]
+
+        datos_vehiculo['Marca'] = datos[2]
+        datos_vehiculo['Modelo'] = datos[3]
+        marca = datos[2]
+        modelo = datos[3]
+
+        path = './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/'
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        with open('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/meta.json', 'w') as fp:
+            json.dump(datos_vehiculo, fp)
+
+        print("Creado meta.json")
+
+        '''obtengo los links de las imagenes de la publicacion en la que me encuentro'''
+
+        i = 0
+        place = []
+
+        for div_tag in soup.findAll('div', {'class': 'location-info'}):
+            place = div_tag.find('span').text
+            i = i + 1
+            if i > 0:
+                break
+
+        q = 0
+        imagenes = []
+
+        for i in range(0, len(soup.findAll('img'))):
+            tag = soup.findAll('img')[i]
+            if tag.get('data-srcset') is not None:
+                image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
+                imagenes += [image]
+                q = q + 1
+
+        y = 0
+
+        while y < q:
+            try:
+                urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+                print("Descargada la imagen", y + 1, "/", str(marca), str(modelo), "/",  place)
+            except Exception as e:
+                print(str(e), imagenes[y])
+
+            y = y + 1
+
+        count = count + 1
+
+print("End")
