@@ -26,7 +26,7 @@ def normalizar(list):
 
 brands = []
 
-'''voy a filtrar primero por marcas, asi que comienzo a obteniendo las marcas'''
+# voy a filtrar primero por marcas, asi que comienzo a obteniendo las marcas
 
 for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_1'}):
     for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
@@ -40,14 +40,14 @@ for i in brands:
     if i not in marcas:
         marcas.append(i)
 
-'''armo los links con los filtros de las marcas'''
+# armo los links con los filtros de las marcas
 
 linksM = []
 
 for i in range(0, len(marcas)):
         linksM += ['https://autos.mercadolibre.com.ar/' + str(marcas[i]) + '/']
 
-'''ahora voy a filtrar por los modelos de cada marca asi que los obtengo'''
+# ahora voy a filtrar por los modelos de cada marca asi que los obtengo
 
 for u in range(0, len(linksM)):
     url_b = linksM[u]
@@ -68,14 +68,14 @@ for u in range(0, len(linksM)):
         if i not in modelos:
             modelos.append(i)
 
-    '''armo los links con los filtros de marca y modelo'''
+    # armo los links con los filtros de marca y modelo
 
     linksMM = []
 
     for i in range(0, len(modelos)):
         linksMM += [linksM[u] + str(modelos[i]) + '/']
 
-    '''ahora filtro por ciudad'''
+    # ahora filtro por ciudad
 
     for k in range(0, len(linksMM)):
         url_bm = linksMM[k]
@@ -90,7 +90,7 @@ for u in range(0, len(linksM)):
 
         normalizar(places)
 
-        '''ahora añado el filtro de ciudad'''
+        # ahora añado el filtro de ciudad
 
         lugares = []
 
@@ -104,7 +104,7 @@ for u in range(0, len(linksM)):
             if lugares[i] == 'santa-fe':
                 lugares[i] = '_PciaId_santa-fe'
 
-        '''armo los links con los filtros de marca, modelo y ciudad'''
+        # armo los links con los filtros de marca, modelo y ciudad
 
         linksMML = []
 
@@ -114,7 +114,7 @@ for u in range(0, len(linksM)):
             else:
                 linksMML += [linksMM[k] + str(lugares[i]) + '/']
 
-        '''ahora obtengo el numero de resultados por pagina para luego armar los links'''
+        # ahora obtengo el numero de resultados por pagina para luego armar los links
 
         for j in range(0, len(linksMML)):
             url_bmp = linksMML[j]
@@ -129,7 +129,7 @@ for u in range(0, len(linksM)):
 
             num = int(lista[0])
 
-            '''armo los links de las paginas'''
+            # armo los links de las paginas
 
             if num <= 48:
                 links_paginas = [url_bmp]
@@ -150,7 +150,7 @@ for u in range(0, len(linksM)):
                 response = requests.get(url, headers=headers)
                 soup = BeautifulSoup(response.text, "html.parser")
 
-                '''obtengo los links de las publaciones que hay por cada pagina'''
+                # obtengo los links de las publaciones que hay por cada pagina
 
                 links_pubs = []
 
@@ -166,7 +166,7 @@ for u in range(0, len(linksM)):
                     if i not in links_per_page:
                         links_per_page.append(i)
 
-                '''for para recorrer todas las publicaciones dentro de una pagina'''
+                # for para recorrer todas las publicaciones dentro de una pagina
 
                 for z in range(0, len(links_per_page)):
                     url_public = links_per_page[z]
@@ -174,14 +174,14 @@ for u in range(0, len(linksM)):
                     response = requests.get(url_public, headers=headers)
                     soup = BeautifulSoup(response.text, "html.parser")
 
-                    '''obtengo el ID de la publicacion en la que me encuentro'''
+                    # obtengo el ID de la publicacion en la que me encuentro
 
                     url_public_str = str(url_public)
                     ides = re.findall('\d+', url_public_str)
                     ides = list(map(int, ides))
                     ID = max(ides)
 
-                    '''obtengo los datos del vehiculo'''
+                    # obtengo los datos del vehiculo
 
                     datos_vehiculo = {}
                     campos = []
@@ -194,7 +194,7 @@ for u in range(0, len(linksM)):
                             if value != '':
                                 datos_vehiculo[field] = value
 
-                    '''obtengo la marca y modelo del vehiculo'''
+                    # obtengo la marca y modelo del vehiculo
 
                     datos = []
 
@@ -217,7 +217,7 @@ for u in range(0, len(linksM)):
 
                     print("Creado meta.json")
 
-                    '''obtengo los links de las imagenes de la publicacion en la que me encuentro'''
+                    # obtengo los links de las imagenes de la publicacion en la que me encuentro
 
                     i = 0
                     place = []
