@@ -14,7 +14,7 @@ headers = {'User-Agent':
 # funcion para normalizar los datos (filtros) que se van obteniendo, elimnar espacios, acentos, etc
 
 
-def normalizar(list):
+def normalize(list):
     for i in range(0, len(list)):
         list[i] = unicodedata.normalize('NFD', list[i]) \
             .encode('ascii', 'ignore') \
@@ -24,7 +24,7 @@ def normalizar(list):
         list[i] = list[i][:-1]
 
 
-def downloadLinks ():
+def downloadlinks():
     response = requests.get(domain, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -45,25 +45,25 @@ def downloadLinks ():
         for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
             brands += [b.text.lower().replace(' ', '-')]
 
-    normalizar(brands)
+    normalize(brands)
 
-    marcas = []
+    brands2 = []
 
     for i in brands:
-        if i not in marcas:
-            marcas.append(i)
+        if i not in brands2:
+            brands2.append(i)
 
     # armo los links con los filtros de las marcas
 
-    linksM = []
+    linksB = []
 
-    for i in range(0, len(marcas)):
-            linksM += ['https://autos.mercadolibre.com.ar/' + str(marcas[i]) + '/']
+    for i in range(0, len(brands2)):
+            linksB += ['https://autos.mercadolibre.com.ar/' + str(brands2[i]) + '/']
 
     # ahora voy a filtrar por los modelos de cada marca asi que los obtengo
 
-    for u in range(0, len(linksM)):
-        url_b = linksM[u]
+    for u in range(0, len(linksB)):
+        url_b = linksB[u]
         response = requests.get(url_b, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -73,92 +73,92 @@ def downloadLinks ():
             for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
                 models += [b.text.lower().replace(' ', '-').replace('!', '')]
 
-        normalizar(models)
+        normalize(models)
 
-        modelos = []
+        models2 = []
 
         for i in models:
-            if i not in modelos:
-                modelos.append(i)
+            if i not in models2:
+                models2.append(i)
 
         # armo los links con los filtros de marca y modelo
 
-        linksMM = []
+        linksBM = []
 
-        for i in range(0, len(modelos)):
-            linksMM += [linksM[u] + str(modelos[i]) + '/']
+        for i in range(0, len(models2)):
+            linksBM += [linksB[u] + str(models2[i]) + '/']
 
         # ahora filtro por ciudad
 
-        for k in range(0, len(linksMM)):
-            url_bm = linksMM[k]
+        for k in range(0, len(linksBM)):
+            url_bm = linksBM[k]
             response = requests.get(url_bm, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
 
-            places = []
+            locations = []
 
             for a_tag in soup.findAll('dl', {'id': 'id_state'}):
                 for b in a_tag.findAll('a', {'class': 'qcat-truncate'}):
-                    places += [b.text.lower().replace('.', '').replace(' ', '-')]
+                    locations += [b.text.lower().replace('.', '').replace(' ', '-')]
 
-            normalizar(places)
+            normalize(locations)
 
             # ahora añado el filtro de ciudad
 
-            lugares = []
+            locations2 = []
 
-            for i in places:
-                if i not in lugares:
-                    lugares.append(i)
+            for i in locations:
+                if i not in locations2:
+                    locations2.append(i)
 
-            for i in range(0, len(lugares)):
-                if lugares[i] == 'cordoba':
-                    lugares[i] = '_PciaId_cordoba'
-                if lugares[i] == 'santa-fe':
-                    lugares[i] = '_PciaId_santa-fe'
+            for i in range(0, len(locations2)):
+                if locations2[i] == 'cordoba':
+                    locations2[i] = '_PciaId_cordoba'
+                if locations2[i] == 'santa-fe':
+                    locations2[i] = '_PciaId_santa-fe'
 
             # armo los links con los filtros de marca, modelo y ciudad
 
-            linksMML = []
+            linksBML = []
 
-            for i in range(0, len(lugares)):
-                if str(lugares[i]) == '_PciaId_cordoba' or str(lugares[i]) == '_PciaId_santa-fe':
-                    linksMML += [linksMM[k] + str(lugares[i])]
+            for i in range(0, len(locations2)):
+                if str(locations2[i]) == '_PciaId_cordoba' or str(locations2[i]) == '_PciaId_santa-fe':
+                    linksBML += [linksBM[k] + str(locations2[i])]
                 else:
-                    linksMML += [linksMM[k] + str(lugares[i]) + '/']
+                    linksBML += [linksBM[k] + str(locations2[i]) + '/']
 
             # ahora obtengo el numero de resultados por pagina para luego armar los links
 
-            for j in range(0, len(linksMML)):
-                url_bmp = linksMML[j]
-                response = requests.get(url_bmp, headers=headers)
+            for j in range(0, len(linksBML)):
+                url_bml = linksBML[j]
+                response = requests.get(url_bml, headers=headers)
                 soup = BeautifulSoup(response.text, "html.parser")
 
                 tag2 = soup.findAll('div', {'class': 'quantity-results'})
                 tag2 = str(tag2)
                 tag2 = tag2.replace('.', '')
 
-                lista = re.findall('\d+', tag2)
+                list_nums = re.findall('\d+', tag2)
 
-                num = int(lista[0])
+                num = int(list_nums[0])
 
                 # armo los links de las paginas
 
                 if num <= 48:
-                    links_paginas = [url_bmp]
+                    links_pages = [url_bml]
                 else:
                     k = 49
-                    links_paginas = [url_bmp]
+                    links_pages = [url_bml]
                     while k <= num:
-                        if '_PciaId_cordoba' in url_bmp or '_PciaId_santa-fe' in url_bmp:
-                            links_paginas += [url_bmp + '/_Desde_' + str(k)]
+                        if '_PciaId_cordoba' in url_bml or '_PciaId_santa-fe' in url_bml:
+                            links_pages += [url_bml + '/_Desde_' + str(k)]
                             k = k + 48
                         else:
-                            links_paginas += [url_bmp + '_Desde_' + str(k)]
+                            links_pages += [url_bml + '_Desde_' + str(k)]
                             k = k + 48
 
-                for r in range(0, len(links_paginas)):
-                    url = links_paginas[r]
+                for r in range(0, len(links_pages)):
+                    url = links_pages[r]
                     response = requests.get(url, headers=headers)
                     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -190,12 +190,12 @@ def downloadLinks ():
 path = './download/ml/item_links.json'
 
 if not os.path.exists(path):
-    downloadLinks()
+    downloadlinks()
 else:
     with open('./download/ml/item_links.json', 'r') as f:
-        dominios = f.read()
+        domains = f.read()
 
-    doms = json.loads(dominios)
+    doms = json.loads(domains)
 
     count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
 
@@ -215,41 +215,41 @@ else:
 
         # obtengo los datos del vehiculo
 
-        datos_vehiculo = {}
-        campos = []
+        data_vehicle = {}
+        fields = []
 
         for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
             for span_tag in li_tag.find_all('li'):
                 value = span_tag.find('span').text
                 field = span_tag.find('strong').text
-                campos += [field]
+                fields += [field]
                 if value != '':
-                    datos_vehiculo[field] = value
+                    data_vehicle[field] = value
 
         # obtengo la marca y modelo del vehiculo
 
-        datos = []
+        data = []
 
         for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
             tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
-            datos += [tag]
+            data += [tag]
 
-        datos_vehiculo['Marca'] = datos[2]
-        datos_vehiculo['Modelo'] = datos[3]
-        marca = datos[2]
-        modelo = datos[3]
+        data_vehicle['Marca'] = data[2]
+        data_vehicle['Modelo'] = data[3]
+        marca = data[2]
+        modelo = data[3]
 
         path = './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/'
 
         if not os.path.exists(path):
             os.makedirs(path)
 
-        with open('./download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/meta.json', 'w') as fp:
-            json.dump(datos_vehiculo, fp)
+        with open(path + 'meta.json', 'w') as fp:
+            json.dump(data_vehicle, fp)
 
-        print("Creado meta.json")
+        print("Created meta.json")
 
-        # obtengo los links de las imagenes de la publicacion en la que me encuentro
+        # obtengo la ubicacion,solo para mostrarlo en consola
 
         i = 0
         place = []
@@ -260,21 +260,23 @@ else:
             if i > 0:
                 break
 
+        # obtengo los links de las imagenes de la publicacion en la que me encuentro
+
         q = 0
-        imagenes = []
+        images = []
 
         for i in range(0, len(soup.findAll('img'))):
             tag = soup.findAll('img')[i]
             if tag.get('data-srcset') is not None:
                 image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
-                imagenes += [image]
+                images += [image]
                 q = q + 1
 
         y = 0
 
         while y < q:
-            urllib.request.urlretrieve(imagenes[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-            print("Descargada la imagen", y + 1, "/", str(marca), str(modelo), "/",  place)
+            urllib.request.urlretrieve(images[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+            print("Downloaded image", y + 1, "/", str(marca), str(modelo), "/",  place)
             y = y + 1
 
         count = count + 1
