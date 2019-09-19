@@ -195,90 +195,92 @@ else:
     with open('./download/ml/item_links.json', 'r') as f:
         domains = f.read()
 
-    doms = json.loads(domains)
+doms = json.loads(domains)
 
-    count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
+count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
 
-    while count <= 100:  # aca va el numero de links guardados en el json
-        url_public = doms['url' + str(count)]
-        print(url_public, count)
+links_number = 100  # aca va el numero de links guardados en el json
 
-        response = requests.get(url_public, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
+while count <= links_number:
+    url_public = doms['url' + str(count)]
+    print(url_public, count)
 
-        # obtengo el ID de la publicacion en la que me encuentro
+    response = requests.get(url_public, headers=headers)
+    soup = BeautifulSoup(response.text, "html.parser")
 
-        url_public_str = str(url_public)
-        ides = re.findall('\d+', url_public_str)
-        ides = list(map(int, ides))
-        ID = max(ides)
+    # obtengo el ID de la publicacion en la que me encuentro
 
-        # obtengo los datos del vehiculo
+    url_public_str = str(url_public)
+    ides = re.findall('\d+', url_public_str)
+    ides = list(map(int, ides))
+    ID = max(ides)
 
-        data_vehicle = {}
-        fields = []
+    # obtengo los datos del vehiculo
 
-        for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
-            for span_tag in li_tag.find_all('li'):
-                value = span_tag.find('span').text
-                field = span_tag.find('strong').text
-                fields += [field]
-                if value != '':
-                    data_vehicle[field] = value
+    data_vehicle = {}
+    fields = []
 
-        # obtengo la marca y modelo del vehiculo
+    for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
+        for span_tag in li_tag.find_all('li'):
+            value = span_tag.find('span').text
+            field = span_tag.find('strong').text
+            fields += [field]
+            if value != '':
+                data_vehicle[field] = value
 
-        data = []
+    # obtengo la marca y modelo del vehiculo
 
-        for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
-            tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
-            data += [tag]
+    data = []
 
-        data_vehicle['Marca'] = data[2]
-        data_vehicle['Modelo'] = data[3]
-        ibrand = data[2]
-        imodel = data[3]
+    for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
+        tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
+        data += [tag]
 
-        path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/'
+    data_vehicle['Marca'] = data[2]
+    data_vehicle['Modelo'] = data[3]
+    ibrand = data[2]
+    imodel = data[3]
 
-        if not os.path.exists(path):
-            os.makedirs(path)
+    path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/'
 
-        with open(path + 'meta.json', 'w') as fp:
-            json.dump(data_vehicle, fp)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
-        print("Created meta.json")
+    with open(path + 'meta.json', 'w') as fp:
+        json.dump(data_vehicle, fp)
 
-        # obtengo la ubicacion,solo para mostrarlo en consola
+    print("Created meta.json")
 
-        i = 0
-        place = []
+    # obtengo la ubicacion,solo para mostrarlo en consola
 
-        for div_tag in soup.findAll('div', {'class': 'location-info'}):
-            place = div_tag.find('span').text
-            i = i + 1
-            if i > 0:
-                break
+    i = 0
+    place = []
 
-        # obtengo los links de las imagenes de la publicacion en la que me encuentro
+    for div_tag in soup.findAll('div', {'class': 'location-info'}):
+        place = div_tag.find('span').text
+        i = i + 1
+        if i > 0:
+            break
 
-        q = 0
-        images = []
+    # obtengo los links de las imagenes de la publicacion en la que me encuentro
 
-        for i in range(0, len(soup.findAll('img'))):
-            tag = soup.findAll('img')[i]
-            if tag.get('data-srcset') is not None:
-                image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
-                images += [image]
-                q = q + 1
+    q = 0
+    images = []
 
-        y = 0
+    for i in range(0, len(soup.findAll('img'))):
+        tag = soup.findAll('img')[i]
+        if tag.get('data-srcset') is not None:
+            image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
+            images += [image]
+            q = q + 1
 
-        while y < q:
-            urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(ibrand).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-            print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
-            y = y + 1
+    y = 0
 
-        count = count + 1
+    while y < q:
+        urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(ibrand).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+        print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
+        y = y + 1
+
+    count = count + 1
 
 print("End")
