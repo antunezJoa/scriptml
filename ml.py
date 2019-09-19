@@ -236,10 +236,10 @@ else:
 
         data_vehicle['Marca'] = data[2]
         data_vehicle['Modelo'] = data[3]
-        marca = data[2]
-        modelo = data[3]
+        ibrand = data[2]
+        imodel = data[3]
 
-        path = './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/'
+        path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/'
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -275,8 +275,8 @@ else:
         y = 0
 
         while y < q:
-            urllib.request.urlretrieve(images[y], './download/ml/' + str(marca).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(marca).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-            print("Downloaded image", y + 1, "/", str(marca), str(modelo), "/",  place)
+            urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(ibrand).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+            print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
             y = y + 1
 
         count = count + 1
