@@ -302,6 +302,5 @@ path = './download/ml/item_links.json'
 
 if not os.path.exists(path):
     savelinks()
-    downloaddata()
 else:
     downloaddata()
