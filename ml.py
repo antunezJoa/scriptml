@@ -24,7 +24,7 @@ def normalize(list):
         list[i] = list[i][:-1]
 
 
-def downloadlinks():
+def savelinks():
     response = requests.get(domain, headers=headers)
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -184,103 +184,108 @@ def downloadlinks():
                             json.dump(links, file)
                         print("Saved", links['url' + str(y)], "number of links saved:", y)
                         y += 1
-    print("End")
+    print("Links saved")
+
+
+def downloaddata():
+    with open('./download/ml/item_links.json', 'r') as f:
+        domains = f.read()
+
+    doms = json.loads(domains)
+
+    count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
+
+    links_number = 10  # aca va el numero de links guardados en el json
+
+    while count <= links_number:
+        url_public = doms['url' + str(count)]
+        print(url_public, count)
+
+        response = requests.get(url_public, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # obtengo el ID de la publicacion en la que me encuentro
+
+        url_public_str = str(url_public)
+        ides = re.findall('\d+', url_public_str)
+        ides = list(map(int, ides))
+        ID = max(ides)
+
+        # obtengo los datos del vehiculo
+
+        data_vehicle = {}
+        fields = []
+
+        for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
+            for span_tag in li_tag.find_all('li'):
+                value = span_tag.find('span').text
+                field = span_tag.find('strong').text
+                fields += [field]
+                if value != '':
+                    data_vehicle[field] = value
+
+        # obtengo la marca y modelo del vehiculo
+
+        data = []
+
+        for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
+            tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
+            data += [tag]
+
+        data_vehicle['Marca'] = data[2]
+        data_vehicle['Modelo'] = data[3]
+        ibrand = data[2]
+        imodel = data[3]
+
+        path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/'
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        with open(path + 'meta.json', 'w') as fp:
+            json.dump(data_vehicle, fp)
+
+        print("Created meta.json")
+
+        # obtengo la ubicacion,solo para mostrarlo en consola
+
+        i = 0
+        place = []
+
+        for div_tag in soup.findAll('div', {'class': 'location-info'}):
+            place = div_tag.find('span').text
+            i = i + 1
+            if i > 0:
+                break
+
+        # obtengo los links de las imagenes de la publicacion en la que me encuentro
+
+        q = 0
+        images = []
+
+        for i in range(0, len(soup.findAll('img'))):
+            tag = soup.findAll('img')[i]
+            if tag.get('data-srcset') is not None:
+                image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
+                images += [image]
+                q = q + 1
+
+        y = 0
+
+        while y < q:
+            urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(ibrand).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+            print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
+            y = y + 1
+
+        count = count + 1
+
+    print("Images downloaded")
 
 
 path = './download/ml/item_links.json'
 
 if not os.path.exists(path):
-    downloadlinks()
+    savelinks()
+    downloaddata()
 else:
-    with open('./download/ml/item_links.json', 'r') as f:
-        domains = f.read()
-
-doms = json.loads(domains)
-
-count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
-
-links_number = 100  # aca va el numero de links guardados en el json
-
-while count <= links_number:
-    url_public = doms['url' + str(count)]
-    print(url_public, count)
-
-    response = requests.get(url_public, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    # obtengo el ID de la publicacion en la que me encuentro
-
-    url_public_str = str(url_public)
-    ides = re.findall('\d+', url_public_str)
-    ides = list(map(int, ides))
-    ID = max(ides)
-
-    # obtengo los datos del vehiculo
-
-    data_vehicle = {}
-    fields = []
-
-    for li_tag in soup.findAll('ul', {'class': 'specs-list'}):
-        for span_tag in li_tag.find_all('li'):
-            value = span_tag.find('span').text
-            field = span_tag.find('strong').text
-            fields += [field]
-            if value != '':
-                data_vehicle[field] = value
-
-    # obtengo la marca y modelo del vehiculo
-
-    data = []
-
-    for i in range(0, len(soup.findAll('a', {'class': 'breadcrumb'}))):
-        tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
-        data += [tag]
-
-    data_vehicle['Marca'] = data[2]
-    data_vehicle['Modelo'] = data[3]
-    ibrand = data[2]
-    imodel = data[3]
-
-    path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/'
-
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-    with open(path + 'meta.json', 'w') as fp:
-        json.dump(data_vehicle, fp)
-
-    print("Created meta.json")
-
-    # obtengo la ubicacion,solo para mostrarlo en consola
-
-    i = 0
-    place = []
-
-    for div_tag in soup.findAll('div', {'class': 'location-info'}):
-        place = div_tag.find('span').text
-        i = i + 1
-        if i > 0:
-            break
-
-    # obtengo los links de las imagenes de la publicacion en la que me encuentro
-
-    q = 0
-    images = []
-
-    for i in range(0, len(soup.findAll('img'))):
-        tag = soup.findAll('img')[i]
-        if tag.get('data-srcset') is not None:
-            image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
-            images += [image]
-            q = q + 1
-
-    y = 0
-
-    while y < q:
-        urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(ibrand).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
-        print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
-        y = y + 1
-
-    count = count + 1
-
-print("End")
+    downloaddata()
