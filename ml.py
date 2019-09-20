@@ -23,6 +23,8 @@ def normalize(list):
         list[i] = re.sub(r'\([^)]*\)', '', list[i])
         list[i] = list[i][:-1]
 
+# funcion para guardar los links dentro de un .json
+
 
 def savelinks():
     response = requests.get(domain, headers=headers)
@@ -46,6 +48,8 @@ def savelinks():
             brands += [b.text.lower().replace(' ', '-')]
 
     normalize(brands)
+
+    # elimino duplicados
 
     brands2 = []
 
@@ -75,6 +79,8 @@ def savelinks():
 
         normalize(models)
 
+        # elimino duplicados
+
         models2 = []
 
         for i in models:
@@ -103,7 +109,7 @@ def savelinks():
 
             normalize(locations)
 
-            # ahora añado el filtro de ciudad
+            # elimino duplicados
 
             locations2 = []
 
@@ -157,12 +163,12 @@ def savelinks():
                             links_pages += [url_bml + '_Desde_' + str(k)]
                             k = k + 48
 
+                # obtengo los links de las publaciones que hay por cada pagina
+
                 for r in range(0, len(links_pages)):
                     url = links_pages[r]
                     response = requests.get(url, headers=headers)
                     soup = BeautifulSoup(response.text, "html.parser")
-
-                    # obtengo los links de las publaciones que hay por cada pagina
 
                     links_pubs = []
 
@@ -172,11 +178,15 @@ def savelinks():
                         if '/MLA-' in href and '[BB:' not in href:
                             links_pubs += [href]
 
+                    # elimino duplicados
+
                     links_per_page = []
 
                     for i in links_pubs:
                         if i not in links_per_page:
                             links_per_page.append(i)
+
+                    # ahora creo el archivo item_links.json y voy guardando los links de las publicaciones
 
                     for i in range(0, len(links_per_page)):
                         links['url' + str(y)] = links_per_page[i]
@@ -188,6 +198,8 @@ def savelinks():
 
 
 def downloaddata():
+    # comienzo abriendo el archivo item_links.json para leerlo e ir obteniendo los links de las publicaciones
+
     with open('./download/ml/item_links.json', 'r') as f:
         domains = f.read()
 
@@ -242,12 +254,14 @@ def downloaddata():
         if not os.path.exists(path):
             os.makedirs(path)
 
+        # creo el meta.json donde van los datos del vehiculo
+
         with open(path + 'meta.json', 'w') as fp:
             json.dump(data_vehicle, fp)
 
         print("Created meta.json")
 
-        # obtengo la ubicacion,solo para mostrarlo en consola
+        # obtengo la ubicacion, solo para mostrarlo en pantalla
 
         i = 0
         place = []
@@ -271,6 +285,8 @@ def downloaddata():
                 q = q + 1
 
         y = 0
+
+        # descargo las imagenes
 
         while y < q:
             urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(id_p) + '/' + str(ibrand).lower() + '_' + str(id_p) + '_' + str(y + 1) + '.jpg')

@@ -14,6 +14,8 @@ headers = {'User-Agent':
 response = requests.get(domain, headers=headers)
 soup = BeautifulSoup(response.text, "html.parser")
 
+# funcion para normalizar los datos (filtros) que se van obteniendo, elimnar espacios, acentos, etc
+
 
 def normalize(list):
     for i in range(0, len(list)):
@@ -34,6 +36,8 @@ for a_tag in soup.findAll('dl', {'id': 'id_9991744-AMLA_1744_1'}):
         brands += [b.text.lower().replace(' ', '-')]
 
 normalize(brands)
+
+# elimino duplicados
 
 brands2 = []
 
@@ -63,6 +67,8 @@ for u in range(0, len(linksB)):
 
     normalize(models)
 
+    # elimino duplicados
+
     models2 = []
 
     for i in models:
@@ -91,7 +97,7 @@ for u in range(0, len(linksB)):
 
         normalize(locations)
 
-        # ahora añado el filtro de ciudad
+        # elimino duplicados
 
         locations2 = []
 
@@ -145,13 +151,13 @@ for u in range(0, len(linksB)):
                         links_pages += [url_bml + '_Desde_' + str(k)]
                         k = k + 48
 
+            # obtengo los links de las publaciones que hay por cada pagina
+
             for r in range(0, len(links_pages)):
                 url = links_pages[r]
                 print(url)
                 response = requests.get(url, headers=headers)
                 soup = BeautifulSoup(response.text, "html.parser")
-
-                # obtengo los links de las publaciones que hay por cada pagina
 
                 links_pubs = []
 
@@ -160,6 +166,8 @@ for u in range(0, len(linksB)):
                     href = tag['href']
                     if '/MLA-' in href and '[BB:' not in href:
                         links_pubs += [href]
+
+                # elimino duplicados
 
                 links_per_page = []
 
@@ -213,12 +221,14 @@ for u in range(0, len(linksB)):
                     if not os.path.exists(path):
                         os.makedirs(path)
 
+                    # creo el meta.json donde van los datos del vehiculo
+
                     with open(path + 'meta.json', 'w') as fp:
                         json.dump(data_vehicle, fp)
 
                     print("Created meta.json")
 
-                    # obtengo la ubicacion,solo para mostrarlo en consola
+                    # obtengo la ubicacion, solo para mostrarlo en pantalla
 
                     i = 0
                     place = []
@@ -242,6 +252,8 @@ for u in range(0, len(linksB)):
                             q = q + 1
 
                     y = 0
+
+                    # descargo las imagenes
 
                     while y < q:
                         urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(ibrand).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
