@@ -55,15 +55,15 @@ def savelinks():
 
     # armo los links con los filtros de las marcas
 
-    linksB = []
+    links_b = []
 
     for i in range(0, len(brands2)):
-            linksB += ['https://autos.mercadolibre.com.ar/' + str(brands2[i]) + '/']
+            links_b += ['https://autos.mercadolibre.com.ar/' + str(brands2[i]) + '/']
 
     # ahora voy a filtrar por los modelos de cada marca asi que los obtengo
 
-    for u in range(0, len(linksB)):
-        url_b = linksB[u]
+    for u in range(0, len(links_b)):
+        url_b = links_b[u]
         response = requests.get(url_b, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -83,15 +83,15 @@ def savelinks():
 
         # armo los links con los filtros de marca y modelo
 
-        linksBM = []
+        links_bm = []
 
         for i in range(0, len(models2)):
-            linksBM += [linksB[u] + str(models2[i]) + '/']
+            links_bm += [links_b[u] + str(models2[i]) + '/']
 
         # ahora filtro por ciudad
 
-        for k in range(0, len(linksBM)):
-            url_bm = linksBM[k]
+        for k in range(0, len(links_bm)):
+            url_bm = links_bm[k]
             response = requests.get(url_bm, headers=headers)
             soup = BeautifulSoup(response.text, "html.parser")
 
@@ -119,18 +119,18 @@ def savelinks():
 
             # armo los links con los filtros de marca, modelo y ciudad
 
-            linksBML = []
+            links_bml = []
 
             for i in range(0, len(locations2)):
                 if str(locations2[i]) == '_PciaId_cordoba' or str(locations2[i]) == '_PciaId_santa-fe':
-                    linksBML += [linksBM[k] + str(locations2[i])]
+                    links_bml += [links_bm[k] + str(locations2[i])]
                 else:
-                    linksBML += [linksBM[k] + str(locations2[i]) + '/']
+                    links_bml += [links_bm[k] + str(locations2[i]) + '/']
 
             # ahora obtengo el numero de resultados por pagina para luego armar los links
 
-            for j in range(0, len(linksBML)):
-                url_bml = linksBML[j]
+            for j in range(0, len(links_bml)):
+                url_bml = links_bml[j]
                 response = requests.get(url_bml, headers=headers)
                 soup = BeautifulSoup(response.text, "html.parser")
 
@@ -204,12 +204,12 @@ def downloaddata():
         response = requests.get(url_public, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # obtengo el ID de la publicacion en la que me encuentro
+        # obtengo el id de la publicacion en la que me encuentro
 
         url_public_str = str(url_public)
         ides = re.findall('\d+', url_public_str)
         ides = list(map(int, ides))
-        ID = max(ides)
+        id_p = max(ides)
 
         # obtengo los datos del vehiculo
 
@@ -237,7 +237,7 @@ def downloaddata():
         ibrand = data[2]
         imodel = data[3]
 
-        path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/'
+        path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(id_p) + '/'
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -273,7 +273,7 @@ def downloaddata():
         y = 0
 
         while y < q:
-            urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(ID) + '/' + str(ibrand).lower() + '_' + str(ID) + '_' + str(y + 1) + '.jpg')
+            urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(id_p) + '/' + str(ibrand).lower() + '_' + str(id_p) + '_' + str(y + 1) + '.jpg')
             print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
             y = y + 1
 
