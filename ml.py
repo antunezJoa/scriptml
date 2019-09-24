@@ -144,13 +144,14 @@ def savelinks():
                 tag2 = soup.findAll('div', {'class': 'quantity-results'})
                 tag2 = str(tag2)
                 tag2 = tag2.replace('.', '')
-                print(tag2)
 
                 list_nums = re.findall('\d+', tag2)
-                print(list_nums)
 
-                num = int(list_nums[0])
-                print(num)
+                if not list_nums:
+                    print("Invalid link")
+                    continue
+                else:
+                    num = int(list_nums[0])
 
                 # armo los links de las paginas
 
