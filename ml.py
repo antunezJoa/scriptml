@@ -137,16 +137,20 @@ def savelinks():
 
             for j in range(0, len(links_bml)):
                 url_bml = links_bml[j]
+                print(url_bml)
                 response = requests.get(url_bml, headers=headers)
                 soup = BeautifulSoup(response.text, "html.parser")
 
                 tag2 = soup.findAll('div', {'class': 'quantity-results'})
                 tag2 = str(tag2)
                 tag2 = tag2.replace('.', '')
+                print(tag2)
 
                 list_nums = re.findall('\d+', tag2)
+                print(list_nums)
 
                 num = int(list_nums[0])
+                print(num)
 
                 # armo los links de las paginas
 
@@ -156,9 +160,16 @@ def savelinks():
                     k = 49
                     links_pages = [url_bml]
                     while k <= num:
-                        if '_PciaId_cordoba' in url_bml or '_PciaId_santa-fe' in url_bml:
-                            links_pages += [url_bml + '/_Desde_' + str(k)]
+                        if '_PciaId_cordoba' in url_bml:
+                            url_bml2 = url_bml.replace('_PciaId_cordoba', '')
+                            links_pages += [url_bml2 + '_Desde_' + str(k) + '_PciaId_cordoba']
                             k = k + 48
+
+                        elif '_PciaId_santa-fe' in url_bml:
+                            url_bml2 = url_bml.replace('_PciaId_santa-fe', '')
+                            links_pages += [url_bml2 + '_Desde_' + str(k) + '_PciaId_santa-fe']
+                            k = k + 48
+
                         else:
                             links_pages += [url_bml + '_Desde_' + str(k)]
                             k = k + 48
@@ -167,12 +178,13 @@ def savelinks():
 
                 for r in range(0, len(links_pages)):
                     url = links_pages[r]
+                    print(url)
                     response = requests.get(url, headers=headers)
                     soup = BeautifulSoup(response.text, "html.parser")
 
                     links_pubs = []
 
-                    for i in range(109, len(soup.findAll('a'))):
+                    for i in range(0, len(soup.findAll('a'))):
                         tag = soup.findAll('a')[i]
                         href = tag['href']
                         if '/MLA-' in href and '[BB:' not in href:
@@ -207,7 +219,7 @@ def downloaddata():
 
     count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
 
-    links_number = 10  # aca va el numero de links guardados en el json
+    links_number = 120000  # aca va el numero de links guardados en el json
 
     while count <= links_number:
         url_public = doms['url' + str(count)]
@@ -302,5 +314,6 @@ path = './download/ml/item_links.json'
 
 if not os.path.exists(path):
     savelinks()
+    downloaddata()
 else:
     downloaddata()
