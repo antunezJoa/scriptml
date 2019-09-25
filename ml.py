@@ -218,11 +218,11 @@ def downloaddata():
 
     doms = json.loads(domains)
 
-    count = 0  # count es el contador que indica en cual link arranca la descarga de imagenes
+    count = 86  # count es el contador que indica en cual link arranca la descarga de imagenes
 
-    links_number = 120000  # aca va el numero de links guardados en el json
+    links_number = 131996  # aca va el numero de links guardados en el json
 
-    while count <= links_number:
+    for count in range(count, links_number):
         url_public = doms['url' + str(count)]
         print(url_public, count)
 
@@ -257,10 +257,14 @@ def downloaddata():
             tag = soup.findAll('a', {'class': 'breadcrumb'})[i].text.replace('\t', '').replace('\n', '')
             data += [tag]
 
-        data_vehicle['Marca'] = data[2]
-        data_vehicle['Modelo'] = data[3]
-        ibrand = data[2]
-        imodel = data[3]
+        if not data_vehicle:
+            print("Invalid link")
+            continue
+        else:
+            data_vehicle['Marca'] = data[2]
+            data_vehicle['Modelo'] = data[3]
+            ibrand = data[2]
+            imodel = data[3]
 
         path = './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(id_p) + '/'
 
@@ -305,8 +309,6 @@ def downloaddata():
             urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(id_p) + '/' + str(ibrand).lower() + '_' + str(id_p) + '_' + str(y + 1) + '.jpg')
             print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
             y = y + 1
-
-        count = count + 1
 
     print("Images downloaded")
 
