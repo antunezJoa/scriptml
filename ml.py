@@ -1,10 +1,12 @@
+import json
+import os.path
+import re
 import requests
+import unicodedata
 import urllib.request
 from bs4 import BeautifulSoup
-import os.path
-import unicodedata
-import re
-import json
+
+#  https://mercadolibre.com.ar
 
 domain = 'https://autos.mercadolibre.com.ar/'
 headers = {'User-Agent':
@@ -164,16 +166,16 @@ def savelinks():
                         if '_PciaId_cordoba' in url_bml:
                             url_bml2 = url_bml.replace('_PciaId_cordoba', '')
                             links_pages += [url_bml2 + '_Desde_' + str(k) + '_PciaId_cordoba']
-                            k = k + 48
+                            k += 48
 
                         elif '_PciaId_santa-fe' in url_bml:
                             url_bml2 = url_bml.replace('_PciaId_santa-fe', '')
                             links_pages += [url_bml2 + '_Desde_' + str(k) + '_PciaId_santa-fe']
-                            k = k + 48
+                            k += 48
 
                         else:
                             links_pages += [url_bml + '_Desde_' + str(k)]
-                            k = k + 48
+                            k += 48
 
                 # obtengo los links de las publaciones que hay por cada pagina
 
@@ -211,6 +213,8 @@ def savelinks():
 
 
 def downloaddata():
+    downs = {}
+
     # comienzo abriendo el archivo item_links.json para leerlo e ir obteniendo los links de las publicaciones
 
     with open('./download/ml/item_links.json', 'r') as f:
@@ -218,16 +222,23 @@ def downloaddata():
 
     doms = json.loads(domains)
 
-    count = 86  # count es el contador que indica en cual link arranca la descarga de imagenes
+    count = 51337  # count es el contador que indica en cual link arranca la descarga de imagenes
 
     links_number = 131996  # aca va el numero de links guardados en el json
 
     for count in range(count, links_number):
         url_public = doms['url' + str(count)]
-        print(url_public, count)
+        print(url_public, 'url ->', count)
 
         response = requests.get(url_public, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
+
+        #  en caso de no poder ver el error http del server en pantalla creo un archivo que va guardando el ultimo estado de count
+
+        count_copy = count
+        downs['downloads'] = count_copy
+        with open('./download/ml/downloads.json', "w") as file:
+            json.dump(downs, file)
 
         # obtengo el id de la publicacion en la que me encuentro
 
@@ -271,6 +282,8 @@ def downloaddata():
         if not os.path.exists(path):
             os.makedirs(path)
 
+        print("brand and model:", str(ibrand), str(imodel), "/ id:", id_p)
+
         # creo el meta.json donde van los datos del vehiculo
 
         with open(path + 'meta.json', 'w') as fp:
@@ -289,6 +302,8 @@ def downloaddata():
             if i > 0:
                 break
 
+        print("location:", place)
+
         # obtengo los links de las imagenes de la publicacion en la que me encuentro
 
         q = 0
@@ -299,7 +314,7 @@ def downloaddata():
             if tag.get('data-srcset') is not None:
                 image = tag.get('data-srcset').replace(' 2x', '').replace('webp', 'jpg')
                 images += [image]
-                q = q + 1
+                q += 1
 
         y = 0
 
@@ -307,9 +322,8 @@ def downloaddata():
 
         while y < q:
             urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(id_p) + '/' + str(ibrand).lower() + '_' + str(id_p) + '_' + str(y + 1) + '.jpg')
-            print("Downloaded image", y + 1, "/", str(ibrand), str(imodel), "/",  place)
-            y = y + 1
-
+            print("Downloaded image", y + 1)
+            y += 1
     print("Images downloaded")
 
 
@@ -317,6 +331,5 @@ path = './download/ml/item_links.json'
 
 if not os.path.exists(path):
     savelinks()
-    downloaddata()
 else:
     downloaddata()
