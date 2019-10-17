@@ -222,23 +222,23 @@ def downloaddata():
 
     doms = json.loads(domains)
 
-    count = 51337  # count es el contador que indica en cual link arranca la descarga de imagenes
+    count = 79647  # count es el contador que indica en cual link arranca la descarga de imagenes
 
     links_number = 131996  # aca va el numero de links guardados en el json
 
     for count in range(count, links_number):
-        url_public = doms['url' + str(count)]
-        print(url_public, 'url ->', count)
-
-        response = requests.get(url_public, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        #  en caso de no poder ver el error http del server en pantalla creo un archivo que va guardando el ultimo estado de count
+        #  en caso de no poder ver el error del server en pantalla creo un archivo que va guardando el ultimo estado de count
 
         count_copy = count
         downs['downloads'] = count_copy
         with open('./download/ml/downloads.json', "w") as file:
             json.dump(downs, file)
+
+        url_public = doms['url' + str(count)]
+        print(url_public, 'url ->', count)
+
+        response = requests.get(url_public, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
 
         # obtengo el id de la publicacion en la que me encuentro
 
