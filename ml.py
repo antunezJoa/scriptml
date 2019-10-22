@@ -222,7 +222,7 @@ def downloaddata():
 
     doms = json.loads(domains)
 
-    count = 79647  # count es el contador que indica en cual link arranca la descarga de imagenes
+    count = 105452  # count es el contador que indica en cual link arranca la descarga de imagenes
 
     links_number = 131996  # aca va el numero de links guardados en el json
 
@@ -269,8 +269,9 @@ def downloaddata():
             data += [tag]
 
         if not data_vehicle:
-            print("Invalid link")
+            print("The post was deleted")
             continue
+            
         else:
             data_vehicle['Marca'] = data[2]
             data_vehicle['Modelo'] = data[3]
