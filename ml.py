@@ -25,6 +25,7 @@ def normalize(list):
         list[i] = re.sub(r'\([^)]*\)', '', list[i])
         list[i] = list[i][:-1]
 
+
 # funcion para guardar los links dentro de un .json
 
 
@@ -38,7 +39,6 @@ def savelinks():
         os.makedirs(path)
 
     links = {}
-
     y = 0
 
     brands = []
@@ -64,7 +64,7 @@ def savelinks():
     links_b = []
 
     for i in range(0, len(brands2)):
-            links_b += ['https://autos.mercadolibre.com.ar/' + str(brands2[i]) + '/']
+        links_b += ['https://autos.mercadolibre.com.ar/' + str(brands2[i]) + '/']
 
     # ahora voy a filtrar por los modelos de cada marca asi que los obtengo
 
@@ -209,6 +209,13 @@ def savelinks():
                             json.dump(links, file)
                         print("Saved", links['url' + str(y)], "number of links saved:", y)
                         y += 1
+
+    #  guardo en info.json la cantidad total de links para mayor comodidad
+
+    links['links_number'] = y
+    with open('./download/ml/info.json', "w") as file:
+        json.dump(links, file)
+
     print("Links saved")
 
 
@@ -222,20 +229,20 @@ def downloaddata():
 
     doms = json.loads(domains)
 
-    count = 105452  # count es el contador que indica en cual link arranca la descarga de imagenes
+    downloads = 107132  # downloads es el contador que indica en cual link arranca la descarga de imagenes
 
     links_number = 131996  # aca va el numero de links guardados en el json
 
-    for count in range(count, links_number):
-        #  en caso de no poder ver el error del server en pantalla creo un archivo que va guardando el ultimo estado de count
+    for downloads in range(downloads, links_number):
+        #  en caso de no poder ver el error en consola y ver en que link te quedaste
+        #  creo un archivo que va guardando el ultimo estado de downloads
 
-        count_copy = count
-        downs['downloads'] = count_copy
-        with open('./download/ml/downloads.json', "w") as file:
+        downs['downloads'] = downloads
+        with open('./download/ml/info.json', "w") as file:
             json.dump(downs, file)
 
-        url_public = doms['url' + str(count)]
-        print(url_public, 'url ->', count)
+        url_public = doms['url' + str(downloads)]
+        print(url_public, 'url ->', downloads)
 
         response = requests.get(url_public, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
@@ -271,7 +278,7 @@ def downloaddata():
         if not data_vehicle:
             print("The post was deleted")
             continue
-            
+
         else:
             data_vehicle['Marca'] = data[2]
             data_vehicle['Modelo'] = data[3]
@@ -322,7 +329,8 @@ def downloaddata():
         # descargo las imagenes
 
         while y < q:
-            urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(id_p) + '/' + str(ibrand).lower() + '_' + str(id_p) + '_' + str(y + 1) + '.jpg')
+            urllib.request.urlretrieve(images[y], './download/ml/' + str(ibrand).lower().replace(' ', '-') + '/' + str(
+                id_p) + '/' + str(ibrand).lower() + '_' + str(id_p) + '_' + str(y + 1) + '.jpg')
             print("Downloaded image", y + 1)
             y += 1
     print("Images downloaded")
