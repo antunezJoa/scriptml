@@ -229,7 +229,7 @@ def downloaddata():
 
     doms = json.loads(domains)
 
-    downloads = 107132  # downloads es el contador que indica en cual link arranca la descarga de imagenes
+    downloads = 0  # downloads es el contador que indica en cual link arranca la descarga de imagenes
 
     links_number = 131996  # aca va el numero de links guardados en el json
 
@@ -336,9 +336,9 @@ def downloaddata():
     print("Images downloaded")
 
 
-path = './download/ml/item_links.json'
+item_links = './download/ml/item_links.json'
 
-if not os.path.exists(path):
+if not os.path.exists(item_links):
     savelinks()
 else:
     downloaddata()
